@@ -3,7 +3,7 @@
 
 ######################### We start with some black magic to print on failure.
 
-BEGIN { $| = 1; print "1..20\n"; }
+BEGIN { $| = 1; print "1..21\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Config::RegFile;
 $loaded = 1;
@@ -48,9 +48,13 @@ Version=121
 Requires=UnrealTournament
 
 [Engine.GameEngine]
-MasterServerAddress=unreal.epicgames.com MasterServerPort=27900
-ServerActors = IpServer.UdpServerUplinkMasterServerAddress=master0.gamespy.com MasterServerPort=27900
-ServerActors	=	IpServer.UdpServerUplinkMasterServerAddress=master.mplayer.com MasterServerPort = 27900
+MasterServerAddress=unreal.epicgames.com MasterServerPort=\\
+	27900
+ServerActors = \\
+IpServer.UdpServerUplinkMasterServerAddress=master0.gamespy.com \\
+MasterServerPort=27900
+ServerActors	=	IpServer.UdpServerUplinkMaster\\
+	ServerAddress=master.mplayer.com MasterServerPort = 27900
 EOT
 close TMPFILE;
 
@@ -77,7 +81,9 @@ if (!$ini->exists(['NONEXISTENT']) and !$ini->exists(['Setup', 'NONEXISTENT'])
 } else { print "not ok 4\n"; }
 
 # get single value
-if ($ini->get(['Setup', 'MasterProduct']) eq 'UnrealTournament') {
+if ($ini->get(['Setup', 'MasterProduct']) eq 'UnrealTournament'
+	and $ini->get(['Engine.GameEngine', 'MasterServerAddress']) eq
+	    'unreal.epicgames.com MasterServerPort=27900') {
 	print "ok 5\n";
 } else { print "not ok 5\n"; }
 
@@ -189,6 +195,7 @@ ServerActors=IpServer.UdpServerUplinkMasterServerAddress=master.mplayer.com Mast
 Caption=The Great New Mutator
 
 EOT
+
 if ($wholefile eq $shouldbe) {
 	print "ok 15\n";
 } else { print "not ok 15\n"; }
@@ -260,7 +267,7 @@ GhostscriptInclude=C:\\PROGRAM FILES\\GSTOOLS\\gs5.50;C:\\PROGRAM FILES\\GSTOOLS
 [Measure]
 XX=1		# new comment delimiter
 XY=0		; old
-YX=0
+YX=0		; again
 
 [DEQData]
 Winlist=t123;218 praivi;215 ptsk;209
@@ -270,9 +277,9 @@ undef $ini;
 $ini = new Config::RegFile($tmpfile, -commentdelim => '#');
 
 if ($ini->get(['Options', 'GhostscriptInclude']) eq 'C:\\PROGRAM FILES\\GSTOOLS\\gs5.50;C:\\PROGRAM FILES\\GSTOOLS\\gs5.50\\fonts'
-	and $ini->get(['Measure', 'XX']) eq "1"
+	and $ini->get(['Measure', 'XX']) eq '1'
 	and $ini->get(['Measure', 'XY']) eq "0\t\t; old"
-	and $ini->get(['DEQData', 'Winlist']) eq "t123;218 praivi;215 ptsk;209"
+	and $ini->get(['DEQData', 'Winlist']) eq 't123;218 praivi;215 ptsk;209'
 	) {
 	print "ok 19\n";
 } else { print "not ok 19\n"; }
@@ -282,9 +289,17 @@ undef $ini;
 $ini = new Config::RegFile;
 $ini->commentdelim('[;#]');
 $ini->open($tmpfile);
-if ($ini->get(['Measure', 'XX']) eq "1"
-	and $ini->get(['Measure', 'XY']) eq "0") {
+if ($ini->get(['Measure', 'XX']) eq '1'
+	and $ini->get(['Measure', 'XY']) eq '0') {
 	print "ok 20\n";
 } else { print "not ok 20\n"; }
+
+# test empty comment delimiter
+undef $ini;
+$ini = new Config::RegFile($tmpfile, -commentdelim => '');
+if ($ini->get(['Measure', 'XY']) eq "0\t\t; old"
+	and $ini->get(['Measure', 'YX']) eq "0\t\t; again") {
+	print "ok 21\n";
+} else { print "not ok 21\n"; }
 
 unlink $tmpfile;

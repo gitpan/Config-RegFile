@@ -1,5 +1,9 @@
 Revision history for Perl extension Config::RegFile (formerly IniFile).
 
+1.06  Wed Jan 10 04:59:03 2001
+	Allow disabling comment stripping by specifying '' as
+	delimiter.
+
 1.05  Tue Jan  9 05:20:12 2001
 	Configurable comment delimiter by DEQ <deq@oct.zaq.ne.jp>.
 	Package name changed to Config::RegFile.
